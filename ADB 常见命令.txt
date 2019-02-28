@@ -1,0 +1,118 @@
+常用adb命令的总结：
+
+1.安装.apk文件
+
+如果当前只有一个模拟器，则：
+
+>adb  install <path>/hello.apk
+
+如果有多个模拟器，需要指定安装在哪个模拟器上，如：
+
+使用：>adb  devices 命令查看当前运行的模拟器的名称
+
+然后：>adb -s emulator-5556  install <path>/hello.apk
+
+2.查看状态
+
+>adb  get-state
+
+device（运行中）,offline(离线)，bootloader(开机中)。
+
+>adb  get-serialno   获取仿真器的序列号
+
+3.移除应用程序
+
+>adb uninstall <path>/hello.apk
+
+4.android操作系统的命令行模式
+
+>adb  shell
+
+#mkdir  创建目录
+#rmdir  删除目录
+#rm     删除文件
+#mv     移动文件
+#cd   /sdcard    进入到Sdcard目录
+#ls     列出当前目录下的文件
+#exit   退出shell
+#adb  pull <remote>  <local>    删除/sdcard下的文件
+#adb  push  <local>  <remote>   写入/sdcard
+
+例如：向/sdcard存入一张图片
+
+>adb  push  mylove.png  /sdcard
+
+5.变更TCP通信端口
+
+>adb  forward  tcp:6100  tcp:7100
+
+android仿真器内定的TCP通信端口是6100
+
+6.启动和关掉服务器
+
+>adb  start-server
+
+>adb  kill-server
+
+7.android仿真器的调试监控报告
+
+>adb  logcat
+
+>adb  bugreport
+8.adb启动app程序 
+adb shell am start -n activityName
+>adb shell am start -n breakan.test/breakan.test.TestActivity
+9.adb  强行停止程序
+adb shell am force-stop 包名
+
+10 adb root命令
+adb reboot usersdupdate
+
+11 查询设备状态 adb get-state
+
+12 释放占用的设备  adb clean-state
+如果释放成功，就会显示success
+
+adb shell
+如果要切到balong口，执行命令：adb shell setprop persist.sys.usb.config hisi_debug,adb
+如果要切生产模式端口，执行命令：adb shell setprop persist.sys.usb.config manufacture,adb
+
+关于allow access to device data弹框的问题，开发认为修改有风险，不打算在版本上做规避。提供的解决方案是，运行以下两条命令关闭该弹框：
+1、adb shell settings put secure usb_conn_prompt 0
+2、adb reboot
+建议把这两条命令加到initPhone中
+
+adb 错误解决：
+问题：
+* daemon not running. starting it now on port 5037 *
+error: could not install *smartsocket* listener: cannot bind to 127.0.0.1:5037: XXX(10048)
+could not read ok from ADB Server
+* failed to start daemon *
+error: cannot connect to daemon
+原因：
+基本是因为5037端口被占用
+
+具体查看被占用的端口进程
+> netstat -aon|findstr 5037
+查看进程的具体描述
+> tasklist /fi "PID eq 1860"
+强制退出进程
+> taskkill /pid 1860 /f
+/f表示强制
+
+更改adb 端口号：
+新建一个环境变量，名字为ANDROID_ADB_SERVER_PORT，然后它的值设为一个新的端口（但是没有被其他程序使用）
+
+adb kill-server
+adb start-server
+
+adb shell getprop sys.boot_completed  返回0--关机  1--开机
+
+获取手机产品信息：getprop ro.product.name
+
+adb shelll getprop  ro.build.version.incremental
+
+Eclipse在执行脚本的时候 会反复出现 adb kill-server   adb start-server 的问题，出现该问题解决方法如下：
+1.adb端口冲突导致的 但是在cmd里面没有冲突 而是在执行EClipse时冲突的 此时只需要改adb更换一个端口即可，新建一个环境变量，名字为ANDROID_ADB_SERVER_PORT，然后它的值设为一个新的端口（但是没有被其他程序使用）
+2.adb的版本不对导致。更换版本之后，重启电脑查看是否解决。
+
